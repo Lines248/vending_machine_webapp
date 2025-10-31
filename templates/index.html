@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Vending Machine (WebGL + SVG)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="stage" aria-label="3D vending machine visualization">
+      <div id="three-root" class="three-root" aria-hidden="true"></div>
+
+      <svg id="ui" class="ui" viewBox="0 0 600 800" role="group" aria-label="Vending machine selection panel"></svg>
+    </section>
+
+    <aside class="panel" aria-label="Controls and status">
+      <h1>Vending Machine</h1>
+
+      <div class="status">
+        <div>Balance: $<span id="balance" data-balance>0.00</span></div>
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="controls">
+        <button id="feed-1" class="btn" type="button">Feed $1</button>
+        <button id="feed-5" class="btn" type="button">Feed $5</button>
+        <button id="finish" class="btn" type="button">Finish (Change)</button>
+      </div>
+
+      <p class="hint">
+        Click a slot button on the SVG panel (A1, B2, etc.) to purchase.
+      </p>
+    </aside>
+  </main>
+
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
