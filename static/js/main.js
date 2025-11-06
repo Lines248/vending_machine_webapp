@@ -1,4 +1,5 @@
 import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import { initThreeModel } from "./three-loader.js";
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
@@ -198,6 +199,7 @@ async function finish() {
   }
 }
 
+
 function wireControls() {
   $("#feed-1").addEventListener("click", () => feed(1.0));
   $("#feed-5").addEventListener("click", () => feed(5.0));
@@ -205,7 +207,7 @@ function wireControls() {
 }
 
 (async function boot() {
-  initThree();
+  initThreeModel();
   wireControls();
   await refreshInventoryAndUI();
 })();
