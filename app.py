@@ -1,18 +1,19 @@
 from __future__ import annotations
 from decimal import Decimal, InvalidOperation
 from flask import Flask, jsonify, request, render_template
+import sys, os
 from vending.file_manager import FileManager
 from vending.transaction_manager import TransactionManager
 from vending.vending_machine import VendingMachine
-from vending.file_manager import FileManager
 
-app = Flask(__name__)
-import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-file_manager = FileManager()                     
+
+app = Flask(__name__, template_folder="templates", static_folder="static")
+
+file_manager = FileManager()
 slots = file_manager.read_inventory()
 vm = VendingMachine(slots)
-tm = TransactionManager()                      
+tm = TransactionManager()
 
 def json_error(message: str, status: int = 400):
     return jsonify({"ok": False, "error": message}), status
@@ -26,17 +27,14 @@ def home():
 
 @app.get("/api/inventory")
 def api_inventory():
-
     return jsonify({"ok": True, "inventory": vm.inventory_snapshot()})
 
 @app.get("/api/status")
 def api_status():
-
     return jsonify({"ok": True, "balance": money_str(tm.get_balance())})
 
 @app.post("/api/feed")
 def api_feed():
-
     data = request.get_json(silent=True) or {}
     amount_str = data.get("amount", "1.00")
     try:
@@ -53,7 +51,6 @@ def api_feed():
 
 @app.post("/api/purchase")
 def api_purchase():
-
     data = request.get_json(silent=True) or {}
     slot_id = (data.get("slot_id") or "").upper().strip()
     if not slot_id:
@@ -74,8 +71,9 @@ def api_purchase():
     if dispensed is None:
         return json_error("Product is SOLD OUT.")
 
-    file_manager.write_to_log(f"PURCHASE {slot_id} {dispensed.name} ${money_str(dispensed.price)} "
-                              f"-> balance ${money_str(tm.get_balance())}")
+    file_manager.write_to_log(
+        f"PURCHASE {slot_id} {dispensed.name} ${money_str(dispensed.price)} -> balance ${money_str(tm.get_balance())}"
+    )
 
     sound = getattr(dispensed, "dispense_sound", lambda: "")()
 
@@ -93,18 +91,13 @@ def api_purchase():
 
 @app.post("/api/finish")
 def api_finish():
-  
-    change = tm.get_change()  
+    change = tm.get_change()
     file_manager.write_to_log(
         f"FINISH -> change ${money_str(change['change_total'])} "
         f"(q={change['quarters']}, d={change['dimes']}, n={change['nickels']})"
     )
     change["change_total"] = money_str(change["change_total"])
     return jsonify({"ok": True, "change": change, "balance": money_str(tm.get_balance())})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-    app = Flask(__name__, template_folder="templates", static_folder="static")
 
 if __name__ == "__main__":
     app.run(debug=True)
