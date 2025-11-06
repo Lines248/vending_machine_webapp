@@ -4,9 +4,11 @@ from flask import Flask, jsonify, request, render_template
 from vending.file_manager import FileManager
 from vending.transaction_manager import TransactionManager
 from vending.vending_machine import VendingMachine
+from vending.file_manager import FileManager
 
 app = Flask(__name__)
-
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 file_manager = FileManager()                     
 slots = file_manager.read_inventory()
 vm = VendingMachine(slots)
@@ -99,6 +101,10 @@ def api_finish():
     )
     change["change_total"] = money_str(change["change_total"])
     return jsonify({"ok": True, "change": change, "balance": money_str(tm.get_balance())})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+    app = Flask(__name__, template_folder="templates", static_folder="static")
 
 if __name__ == "__main__":
     app.run(debug=True)
