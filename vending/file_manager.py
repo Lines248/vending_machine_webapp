@@ -1,7 +1,7 @@
 from __future__ import annotations
-
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+import os
 from typing import Dict, Optional
 
 from vending.slot import Slot
@@ -13,9 +13,8 @@ from vending.beverage import Beverage
 
 
 class FileManager:
-
     DEFAULT_INPUT = "vendingmachine.csv"
-    DEFAULT_LOG   = "logs/transactions.log"
+    DEFAULT_LOG = "logs/transactions.log"
     SLOT_START_QUANTITY = 5
 
     def __init__(
@@ -23,22 +22,27 @@ class FileManager:
         input_path: Optional[Path] = None,
         log_path: Optional[Path] = None,
     ) -> None:
-        root = Path(__file__).resolve().parents[1]  
+        root = Path(__file__).resolve().parents[1]
+
         self.input_path = Path(input_path) if input_path else (root / self.DEFAULT_INPUT)
-        self.log_path   = Path(log_path) if log_path else (root / self.DEFAULT_LOG)
+
+        if os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"):
+            base_log = Path("/tmp/transactions.log")
+        else:
+            base_log = root / self.DEFAULT_LOG
+
+        self.log_path = Path(log_path) if log_path else base_log
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
         self._product_factories = {
-            "CHIP":     Chips,
-            "CANDY":    Candy,
-            "GUM":      Gum,
-            "DRINK":    Beverage,
-            "BEVERAGE": Beverage,  
+            "CHIP": Chips,
+            "CANDY": Candy,
+            "GUM": Gum,
+            "DRINK": Beverage,
+            "BEVERAGE": Beverage,
         }
 
-
     def read_inventory(self) -> Dict[str, Slot]:
-   
         slots: Dict[str, Slot] = {}
 
         if not self.input_path.exists():
@@ -49,7 +53,7 @@ class FileManager:
             for i, raw in enumerate(fh, start=1):
                 line = raw.strip()
                 if not line:
-                    continue  
+                    continue
 
                 parts = [p.strip() for p in line.split("|")]
                 if len(parts) != 4:
@@ -78,11 +82,12 @@ class FileManager:
         return slots
 
     def write_to_log(self, message: str = "Event") -> None:
-  
+        """Append a timestamped line to the log, or print a warning if not possible."""
         try:
+            from datetime import datetime
+            ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
             with self.log_path.open("a", encoding="utf-8") as log:
-                from datetime import datetime
-                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 log.write(f"[{ts}] {message}\n")
         except OSError as e:
             self._warn(f"Unable to write log: {e}")
