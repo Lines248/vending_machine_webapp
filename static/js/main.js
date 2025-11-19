@@ -5,57 +5,15 @@ import * as ui from "./ui.js";
 import * as accessibility from "./accessibility.js";
 
 const $ = (sel, el = document) => el.querySelector(sel);
-const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
 const state = {
   initialized: false,
 };
 
-async function init() {
-  try {
-    const elements = {
-      balance: $("[data-balance]"),
-      message: $("#message"),
-      svg: $("#ui"),
-      threeRoot: $("#three-root"),
-      volumeControl: $("#volume-slider"),
-      muteButton: $("#mute-btn"),
-    };
-
-    initThreeModel();
-    initScene(elements.threeRoot);
-    ui.initUI(elements);
-    accessibility.initAccessibility(elements);
-
-    wireControls(elements);
-
-    await refreshInventoryAndUI();
-
-    state.initialized = true;
-    ui.setMessage("Ready.");
-    accessibility.announce("Vending machine ready");
-  } catch (error) {
-    console.error("Initialization error:", error);
-    ui.setMessage("Failed to initialize application.", true);
-  }
-}
-
-function wireControls(elements) {
-  $("#feed-1")?.addEventListener("click", () => handleFeed(1.0));
-  $("#feed-5")?.addEventListener("click", () => handleFeed(5.0));
-  $("#finish")?.addEventListener("click", handleFinish);
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "1" && !e.ctrlKey && !e.metaKey) {
-      handleFeed(1.0);
-    } else if (e.key === "5" && !e.ctrlKey && !e.metaKey) {
-      handleFeed(5.0);
-    } else if (e.key === "f" || e.key === "F") {
-      if (document.activeElement.tagName !== "INPUT") {
-        handleFinish();
-      }
-    }
-  });
+function handleError(err, defaultMessage) {
+  const message = err.message || defaultMessage;
+  ui.setMessage(message, true);
+  accessibility.announce(message, "assertive");
 }
 
 async function handleFeed(amount) {
@@ -66,8 +24,7 @@ async function handleFeed(amount) {
     accessibility.speak(`Added ${amount} dollars`);
     accessibility.announce(`Balance updated to ${res.balance}`);
   } catch (err) {
-    ui.setMessage(err.message || "Feed failed.", true);
-    accessibility.announce(err.message || "Feed failed", "assertive");
+    handleError(err, "Feed failed.");
   }
 }
 
@@ -85,8 +42,7 @@ async function handleSlotClick(slotId) {
     ui.setMessage(message);
     accessibility.announce(message);
   } catch (err) {
-    ui.setMessage(err.message || "Purchase failed.", true);
-    accessibility.announce(err.message || "Purchase failed", "assertive");
+    handleError(err, "Purchase failed.");
   }
 }
 
@@ -101,8 +57,7 @@ async function handleFinish() {
     accessibility.speak(message);
     accessibility.announce(message);
   } catch (err) {
-    ui.setMessage(err.message || "Finish failed.", true);
-    accessibility.announce(err.message || "Finish failed", "assertive");
+    handleError(err, "Finish failed.");
   }
 }
 
@@ -114,6 +69,65 @@ async function refreshInventoryAndUI() {
   } catch (err) {
     console.error("Failed to refresh inventory:", err);
     ui.setMessage("Failed to load inventory.", true);
+  }
+}
+
+function wireControls() {
+  const feedButtons = [
+    { id: "feed-1", amount: 1.0 },
+    { id: "feed-5", amount: 5.0 },
+  ];
+  
+  feedButtons.forEach(({ id, amount }) => {
+    const btn = $(`#${id}`);
+    if (btn) {
+      btn.addEventListener("click", () => handleFeed(amount));
+    }
+  });
+  
+  const finishBtn = $("#finish");
+  if (finishBtn) {
+    finishBtn.addEventListener("click", handleFinish);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (document.activeElement.tagName === "INPUT") return;
+    
+    if (e.key === "1" && !e.ctrlKey && !e.metaKey) {
+      handleFeed(1.0);
+    } else if (e.key === "5" && !e.ctrlKey && !e.metaKey) {
+      handleFeed(5.0);
+    } else if (e.key === "f" || e.key === "F") {
+      handleFinish();
+    }
+  });
+}
+
+async function init() {
+  try {
+    const elements = {
+      balance: $("[data-balance]"),
+      message: $("#message"),
+      svg: $("#ui"),
+      threeRoot: $("#three-root"),
+      volumeControl: $("#volume-slider"),
+      muteButton: $("#mute-btn"),
+    };
+
+    initThreeModel();
+    initScene(elements.threeRoot);
+    ui.initUI(elements);
+    accessibility.initAccessibility(elements);
+    wireControls();
+
+    await refreshInventoryAndUI();
+
+    state.initialized = true;
+    ui.setMessage("Ready.");
+    accessibility.announce("Vending machine ready");
+  } catch (error) {
+    console.error("Initialization error:", error);
+    ui.setMessage("Failed to initialize application.", true);
   }
 }
 

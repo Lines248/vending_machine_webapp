@@ -12,10 +12,7 @@ export function initAccessibility(elements) {
   if (volumeControlEl) {
     volumeControlEl.value = currentVolume * 100;
     volumeControlEl.addEventListener("input", handleVolumeChange);
-    volumeControlEl.setAttribute("aria-label", "Volume control");
-    volumeControlEl.setAttribute("aria-valuemin", "0");
-    volumeControlEl.setAttribute("aria-valuemax", "100");
-    volumeControlEl.setAttribute("aria-valuenow", currentVolume * 100);
+    setVolumeAttributes(volumeControlEl, currentVolume * 100);
   }
 
   if (muteButtonEl) {
@@ -27,12 +24,16 @@ export function initAccessibility(elements) {
   setupKeyboardNavigation();
 }
 
+function setVolumeAttributes(el, value) {
+  el.setAttribute("aria-label", "Volume control");
+  el.setAttribute("aria-valuemin", "0");
+  el.setAttribute("aria-valuemax", "100");
+  el.setAttribute("aria-valuenow", value);
+}
+
 function handleVolumeChange(e) {
   currentVolume = parseFloat(e.target.value) / 100;
-  
-  if (volumeControlEl) {
-    volumeControlEl.setAttribute("aria-valuenow", e.target.value);
-  }
+  setVolumeAttributes(volumeControlEl, e.target.value);
   
   if (!isMuted) {
     updateSpeechVolume();
@@ -50,7 +51,6 @@ function updateMuteButton() {
   
   muteButtonEl.setAttribute("aria-pressed", isMuted.toString());
   muteButtonEl.setAttribute("aria-label", isMuted ? "Unmute sound" : "Mute sound");
-  
   muteButtonEl.textContent = isMuted ? "Unmute" : "Mute";
   muteButtonEl.classList.toggle("muted", isMuted);
 }
@@ -83,18 +83,18 @@ export function speak(text) {
 
 function setupKeyboardNavigation() {
   document.addEventListener("keydown", (e) => {
+    if (document.activeElement.tagName === "INPUT") return;
+    
     if (e.key === "m" || e.key === "M") {
-      if (document.activeElement.tagName !== "INPUT") {
-        e.preventDefault();
-        toggleMute();
-      }
+      e.preventDefault();
+      toggleMute();
     }
     
-    if (document.activeElement.tagName !== "INPUT") {
-      if (e.key === "ArrowUp" && e.ctrlKey) {
+    if (e.ctrlKey) {
+      if (e.key === "ArrowUp") {
         e.preventDefault();
         adjustVolume(0.1);
-      } else if (e.key === "ArrowDown" && e.ctrlKey) {
+      } else if (e.key === "ArrowDown") {
         e.preventDefault();
         adjustVolume(-0.1);
       }
@@ -110,7 +110,7 @@ function adjustVolume(delta) {
   
   if (volumeControlEl) {
     volumeControlEl.value = currentVolume * 100;
-    volumeControlEl.setAttribute("aria-valuenow", currentVolume * 100);
+    setVolumeAttributes(volumeControlEl, currentVolume * 100);
   }
   
   if (!isMuted) {
