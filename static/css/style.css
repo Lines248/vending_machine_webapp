@@ -25,6 +25,97 @@ body {
   padding: 16px;
 }
 
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    padding: 8px;
+    gap: 8px;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  
+  .stage {
+    min-height: 0;
+    max-height: 100%;
+  }
+  
+  .panel {
+    max-height: 30vh;
+    overflow-y: auto;
+    padding: 12px;
+  }
+  
+  h1 {
+    font-size: 18px;
+  }
+  
+  .status {
+    font-size: 14px;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    min-height: 44px;
+  }
+  
+  .hint {
+    font-size: 12px;
+  }
+  
+  svg text {
+    font-size: 16px;
+  }
+  
+  svg .price-text {
+    font-size: 14px;
+  }
+  
+  svg .count-text {
+    font-size: 10px;
+  }
+  
+  svg .slot-button {
+    stroke-width: 2;
+  }
+  
+  .volume-control label {
+    min-width: 50px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 4px;
+    gap: 4px;
+  }
+  
+  .panel {
+    padding: 10px;
+    max-height: 35vh;
+  }
+  
+  h1 {
+    font-size: 16px;
+  }
+  
+  .status {
+    font-size: 13px;
+  }
+  
+  .btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
 .stage {
   position: relative;
   border-radius: 16px;
@@ -184,14 +275,17 @@ svg .slot-button {
   pointer-events: auto;
   cursor: pointer;
   transition: transform 120ms ease, fill 120ms ease;
+  touch-action: manipulation;
 }
 svg .slot-button:hover { fill: #233044; transform: translateY(-1px); }
+svg .slot-button:active { fill: #2a3d52; transform: translateY(0); }
 
 svg text {
   fill: #d9e7f3;
   font: 600 18px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   pointer-events: none;
 }
+
 svg .soldout {
   fill: #899aaa;
   text-decoration: line-through;

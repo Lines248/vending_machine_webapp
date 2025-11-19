@@ -15,7 +15,7 @@ const TEXT_CONFIG = {
   maxCharsPerLine: 11,
   maxLines: 2,
   lineHeight: 15,
-  padding: 12,
+  padding: 16,
 };
 
 const TILE_CONFIG = {
@@ -109,12 +109,15 @@ function createSVGElement(tag, attrs = {}) {
   return element;
 }
 
-function createSlotButton(item, x, y, onSlotClick) {
+function createSlotButton(item, x, y, onSlotClick, cellWidth, cellHeight) {
+  const width = cellWidth || CONFIG.UI.CELL_WIDTH;
+  const height = cellHeight || CONFIG.UI.CELL_HEIGHT;
+  
   const rect = createSVGElement("rect", {
     x,
     y,
-    width: CONFIG.UI.CELL_WIDTH,
-    height: CONFIG.UI.CELL_HEIGHT,
+    width: width,
+    height: height,
     class: "slot-button",
     "data-slot-id": item.slot_id,
     "aria-label": `${item.slot_id}: ${item.sold_out ? "Sold Out" : item.name || "Empty"} - $${item.price}`,
@@ -138,14 +141,16 @@ function createSlotButton(item, x, y, onSlotClick) {
   return rect;
 }
 
-function createInventoryTiles(item, x, y, slotGroup) {
+function createInventoryTiles(item, x, y, slotGroup, cellWidth, cellHeight) {
   const count = item.sold_out ? 0 : item.count;
   if (count === 0) return;
   
+  const width = cellWidth || CONFIG.UI.CELL_WIDTH;
+  const height = cellHeight || CONFIG.UI.CELL_HEIGHT;
   const slotRow = item.slot_id.charAt(0).toUpperCase();
   const colors = getTileColors(slotRow);
-  const tileStartY = y + CONFIG.UI.CELL_HEIGHT - TILE_CONFIG.offsetY;
-  const tileWidth = CONFIG.UI.CELL_WIDTH - (TILE_CONFIG.padding * 2);
+  const tileStartY = y + height - TILE_CONFIG.offsetY;
+  const tileWidth = width - (TILE_CONFIG.padding * 2);
   const tileX = x + TILE_CONFIG.padding;
   
   for (let i = 0; i < count && i < TILE_CONFIG.maxCapacity; i++) {
@@ -164,10 +169,18 @@ function createInventoryTiles(item, x, y, slotGroup) {
   }
 }
 
-function createSlotText(item, x, y) {
+function createSlotText(item, x, y, cellWidth, cellHeight) {
+  const isDesktop = window.innerWidth >= 769;
+  const width = cellWidth || CONFIG.UI.CELL_WIDTH;
+  const height = cellHeight || CONFIG.UI.CELL_HEIGHT;
+  const textPadding = isDesktop ? 20 : TEXT_CONFIG.padding;
+  const topPadding = isDesktop ? 36 : 30;
+  const namePadding = isDesktop ? 61 : 55;
+  const pricePadding = isDesktop ? 106 : 100;
+  
   const slotIdText = createSVGElement("text", {
-    x: x + TEXT_CONFIG.padding,
-    y: y + 28,
+    x: x + textPadding,
+    y: y + topPadding,
   });
   slotIdText.textContent = item.slot_id;
   svg.appendChild(slotIdText);
@@ -176,14 +189,14 @@ function createSlotText(item, x, y) {
   const wrappedLines = wrapText(displayName, TEXT_CONFIG.maxCharsPerLine, TEXT_CONFIG.maxLines);
   
   const nameTextGroup = createSVGElement("text", {
-    x: x + TEXT_CONFIG.padding,
-    y: y + 50,
+    x: x + textPadding,
+    y: y + namePadding,
     class: item.sold_out ? "soldout" : "",
   });
   
   wrappedLines.forEach((line, idx) => {
     const tspan = createSVGElement("tspan", {
-      x: x + TEXT_CONFIG.padding,
+      x: x + textPadding,
       dy: idx === 0 ? "0" : TEXT_CONFIG.lineHeight.toString(),
     });
     tspan.textContent = line;
@@ -193,8 +206,8 @@ function createSlotText(item, x, y) {
   svg.appendChild(nameTextGroup);
   
   const priceText = createSVGElement("text", {
-    x: x + TEXT_CONFIG.padding,
-    y: y + 88,
+    x: x + textPadding,
+    y: y + pricePadding,
     class: "price-text",
   });
   priceText.textContent = item.sold_out ? "$—" : `$${item.price}`;
@@ -202,8 +215,8 @@ function createSlotText(item, x, y) {
   
   if (!item.sold_out && item.count > 0) {
     const countText = createSVGElement("text", {
-      x: x + CONFIG.UI.CELL_WIDTH - 8,
-      y: y + CONFIG.UI.CELL_HEIGHT - 4,
+      x: x + width - textPadding,
+      y: y + height - (isDesktop ? 8 : 6),
       class: "count-text",
     });
     countText.textContent = item.count.toString();
@@ -219,20 +232,33 @@ export function renderInventoryGrid(inventory, onSlotClick) {
   }
 
   const { GRID_COLS, CELL_WIDTH, CELL_HEIGHT, START_X, START_Y, GAP_X, GAP_Y } = CONFIG.UI;
+  const isMobile = window.innerWidth <= 768;
+  
+  const mobileCellWidth = 140;
+  const mobileCellHeight = 120;
+  const actualCellWidth = isMobile ? mobileCellWidth : CELL_WIDTH;
+  const actualCellHeight = isMobile ? mobileCellHeight : CELL_HEIGHT;
+  
+  let startX = START_X;
+  if (isMobile) {
+    const totalWidth = GRID_COLS * actualCellWidth + (GRID_COLS - 1) * GAP_X;
+    const svgWidth = svg.viewBox.baseVal.width || 750;
+    startX = (svgWidth - totalWidth) / 2;
+  }
 
   inventory.forEach((item, i) => {
     const col = i % GRID_COLS;
     const row = Math.floor(i / GRID_COLS);
-    const x = START_X + col * (CELL_WIDTH + GAP_X);
-    const y = START_Y + row * (CELL_HEIGHT + GAP_Y);
+    const x = startX + col * (actualCellWidth + GAP_X);
+    const y = START_Y + row * (actualCellHeight + GAP_Y);
 
     const slotGroup = createSVGElement("g", { class: "slot-group" });
-    const button = createSlotButton(item, x, y, onSlotClick);
+    const button = createSlotButton(item, x, y, onSlotClick, actualCellWidth, actualCellHeight);
     slotGroup.appendChild(button);
     
-    createInventoryTiles(item, x, y, slotGroup);
+    createInventoryTiles(item, x, y, slotGroup, actualCellWidth, actualCellHeight);
     svg.appendChild(slotGroup);
-    createSlotText(item, x, y);
+    createSlotText(item, x, y, actualCellWidth, actualCellHeight);
   });
 }
 
