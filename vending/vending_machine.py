@@ -1,8 +1,10 @@
 from vending.slot import Slot
 from vending.file_manager import FileManager
+from typing import Optional, Dict
 
 class VendingMachine:
-    def __init__(self, slots: dict[str, Slot] | None = None):
+
+    def __init__(self, slots: Optional[Dict[str, Slot]] = None):
         if slots is not None:
             self.slots = slots
         else: 

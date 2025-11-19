@@ -1,12 +1,13 @@
 # Vending Machine Web App
 
-A rewrite of the classic Tech Elevator vending machine project — rebuilt in Python and extended into a visual 3D experience using Flask, WebGL, and SVG.
+A rewrite of the classic Tech Elevator vending machine project, originally built in Java Spring Boot, now rebuilt in Python Flask and extended into a visual 3D experience using Flask, WebGL, and SVG.
 
 ## Features
-- Python backend (Flask)
+- Python backend (Flask) - rewritten from Java Spring Boot
 - Object-oriented structure (`Product`, `VendingMachine`, etc.)
-- Planned interactive front-end using Three.js + SVG overlays
-- Accessibility-first design
+- Interactive front-end using Three.js + SVG overlays
+- Accessibility-first design with AAA compliance
+- Three.js 3D visualization (currently visual only, integration with functionality planned next)
 
 ## Local Setup
 ```bash

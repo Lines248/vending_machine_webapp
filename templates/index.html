@@ -11,7 +11,7 @@
     <section class="stage" aria-label="3D vending machine visualization">
       <div id="three-root" class="three-root" aria-hidden="true"></div>
 
-      <svg id="ui" class="ui" viewBox="0 0 600 800" role="group" aria-label="Vending machine selection panel"></svg>
+      <svg id="ui" class="ui" viewBox="0 0 650 850" role="group" aria-label="Vending machine selection panel"></svg>
     </section>
 
     <aside class="panel" aria-label="Controls and status">
@@ -23,13 +23,33 @@
       </div>
 
       <div class="controls">
-        <button id="feed-1" class="btn" type="button">Feed $1</button>
-        <button id="feed-5" class="btn" type="button">Feed $5</button>
-        <button id="finish" class="btn" type="button">Finish (Change)</button>
+        <button id="feed-1" class="btn" type="button" aria-label="Add one dollar to balance">Feed $1</button>
+        <button id="feed-5" class="btn" type="button" aria-label="Add five dollars to balance">Feed $5</button>
+        <button id="finish" class="btn" type="button" aria-label="Finish transaction and receive change">Finish</button>
+      </div>
+
+      <div class="accessibility-controls" aria-label="Accessibility controls">
+        <div class="volume-control">
+          <label for="volume-slider">Volume:</label>
+          <input 
+            type="range" 
+            id="volume-slider" 
+            min="0" 
+            max="100" 
+            value="70"
+            aria-label="Volume control"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="70"
+          />
+        </div>
+        <button id="mute-btn" class="btn mute-btn" type="button" aria-label="Mute sound" aria-pressed="false">
+          🔊 Mute
+        </button>
       </div>
 
       <p class="hint">
-        Click a slot button on the SVG panel (A1, B2, etc.) to purchase.
+        Click a slot button on the SVG panel (A1, B2, etc.) to purchase. Use keyboard: M to mute, Ctrl+Arrow keys for volume.
       </p>
     </aside>
   </main>

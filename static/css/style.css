@@ -85,8 +85,89 @@ h1 {
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
 }
 .btn:hover { background: var(--btn-hover); }
+.btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Accessibility controls */
+.accessibility-controls {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.volume-control label {
+  font-size: 13px;
+  color: var(--muted);
+  min-width: 60px;
+}
+
+.volume-control input[type="range"] {
+  flex: 1;
+  height: 4px;
+  background: var(--btn);
+  border-radius: 2px;
+  outline: none;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volume-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.mute-btn {
+  width: 100%;
+  font-size: 13px;
+}
+
+.muted {
+  opacity: 0.6;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
 
 .hint {
   margin: 8px 0 0;
@@ -114,4 +195,19 @@ svg text {
 svg .soldout {
   fill: #899aaa;
   text-decoration: line-through;
+}
+svg .price-text {
+  fill: #d9e7f3;
+  font: 600 16px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+svg .count-text {
+  fill: #9fb2bf;
+  font: 500 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  text-anchor: end;
+}
+svg .inventory-tile {
+  fill: #2a4a5a;
+  stroke: rgba(42, 74, 90, 0.6);
+  stroke-width: 0.5;
+  opacity: 0.5;
 }
